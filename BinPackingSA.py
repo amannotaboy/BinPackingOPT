@@ -1,19 +1,19 @@
 import random
 import math
 import time
+import os
 
 class SimulatedAnnealing:
     def __init__(self, orders, vehicles, initial_temp, cooling_rate, time_limit):
-        self.orders = orders  # List of (d(i), c(i))
-        self.vehicles = vehicles  # List of (c1(k), c2(k))
+        self.orders = orders  
+        self.vehicles = vehicles  
         self.initial_temp = initial_temp
         self.cooling_rate = cooling_rate
-        self.time_limit = time_limit  # Maximum time limit in seconds
+        self.time_limit = time_limit  
         self.best_solution = None
         self.best_cost = 0
 
     def initialize_solution(self):
-        # Greedy initialization to ensure feasibility
         solution = [-1] * len(self.orders)
         for i, (d, _) in enumerate(self.orders):
             for v, (c1, c2) in enumerate(self.vehicles):
@@ -38,7 +38,7 @@ class SimulatedAnnealing:
     def get_neighbor(self, solution):
         neighbor = solution[:]
         i = random.randint(0, len(solution) - 1)
-        # Instead of just re-assigning randomly, try swapping or shifting orders
+
         j = random.randint(0, len(solution) - 1)
         if i != j:
             neighbor[i], neighbor[j] = neighbor[j], neighbor[i]
@@ -68,25 +68,25 @@ class SimulatedAnnealing:
 
             temp *= self.cooling_rate
 
-        return current_solution, current_cost  # Return the current solution and its cost
+        return current_solution, current_cost 
 
-# Open the output file for writing all results
-with open("all_outputs.txt", "w") as output_file:
-    # Loop to run the algorithm for 10 input files
-    for i in range(1, 11):
-        input_filename = f"test_case_{i}.txt"  # Input file name pattern
-        
-        # Read input from file
-        with open(input_filename, "r") as f:
-            n, k = map(int, f.readline().split())
-            orders = [tuple(map(int, f.readline().split())) for _ in range(n)]
-            vehicles = [tuple(map(int, f.readline().split())) for _ in range(k)]
+with open("all_outputs4.txt", "w") as output_file:
+    
+    input_directory = "./TestFrom(750-1000, 75-100)"  
 
-        sa = SimulatedAnnealing(orders, vehicles, initial_temp=10000, cooling_rate=0.85, time_limit=120)  # Increased time limit and temperature
-        current_solution, current_cost = sa.simulated_annealing()
+    for input_filename in os.listdir(input_directory):
+        if input_filename.endswith(".txt"): 
+            file_path = os.path.join(input_directory, input_filename)
 
-        # Append the total cost of served orders to the output file
-        output_file.write(f"Total cost of served orders for test_case_{i}: {current_cost}\n")
-        print(f"Output for {input_filename} has been successfully appended to 'all_outputs.txt'.")
+            with open(file_path, "r") as f:
+                n, k = map(int, f.readline().split())
+                orders = [tuple(map(int, f.readline().split())) for _ in range(n)]
+                vehicles = [tuple(map(int, f.readline().split())) for _ in range(k)]
+
+            sa = SimulatedAnnealing(orders, vehicles, initial_temp=10000, cooling_rate=0.85, time_limit=120)  
+            current_solution, current_cost = sa.simulated_annealing()
+            
+            output_file.write(f"Total cost of served orders for {input_filename}: {current_cost}\n")
+            print(f"Output for {input_filename} has been successfully appended to 'all_outputs.txt'.")
 
 print("All results have been written to 'all_outputs.txt'.")
