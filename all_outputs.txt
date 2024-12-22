@@ -1,0 +1,10 @@
+Total cost of served orders for test_case_1: 20522
+Total cost of served orders for test_case_2: 20799
+Total cost of served orders for test_case_3: 18374
+Total cost of served orders for test_case_4: 19775
+Total cost of served orders for test_case_5: 22923
+Total cost of served orders for test_case_6: 18764
+Total cost of served orders for test_case_7: 20586
+Total cost of served orders for test_case_8: 18226
+Total cost of served orders for test_case_9: 20577
+Total cost of served orders for test_case_10: 19590
