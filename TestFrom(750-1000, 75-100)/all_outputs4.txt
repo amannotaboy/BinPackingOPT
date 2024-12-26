@@ -6,5 +6,5 @@ Total cost of served orders for test_case_4.txt: 21329
 Total cost of served orders for test_case_5.txt: 18944
 Total cost of served orders for test_case_6.txt: 18380
 Total cost of served orders for test_case_7.txt: 17293
-Total cost of served orders for test_case_8.txt: 17300
+Total cost of served orders for test_case_8.txt: 17300  
 Total cost of served orders for test_case_9.txt: 20323

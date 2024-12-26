@@ -2,8 +2,8 @@ import random
 
 def generate_test_case():
     # Randomize N (number of orders) and K (number of vehicles)
-    N = random.randint(500, 750)  # Large values close to the upper limit
-    K = random.randint(50, 75)    # Large values close to the upper limit
+    N = random.randint(0, 50)  # Large values close to the upper limit
+    K = random.randint(0, 10)    # Large values close to the upper limit
 
     # Generate orders: each order has quantity d(i) and cost c(i)
     orders = [(random.randint(1, 100), random.randint(1, 100)) for _ in range(N)]

@@ -1,6 +1,6 @@
 import random
 import time
-import os 
+
 class GeneticAlgorithm:
     def __init__(self, orders, vehicles, population_size, generations, mutation_rate, time_limit):
         self.orders = orders
@@ -111,30 +111,27 @@ class GeneticAlgorithm:
 
         return current_solution, current_fitness
 
-with open("all_outputs1_ga.txt", "w") as output_file:
-    
-    input_directory = "./TestFrom(0-250, 0-25)"  
 
-    for input_filename in os.listdir(input_directory):
-        if input_filename.endswith(".txt"): 
-            file_path = os.path.join(input_directory, input_filename)
+input_file = "input.txt"
+output_file = "output.txt"
 
-            with open(file_path, "r") as f:
-                n, k = list(map(int, f.readline().split()))
-                orders = []
-                for _ in range(n):
-                    order = tuple(map(int, f.readline().split()))
-                    orders.append(order)
-    
-                vehicles = []
-                for _ in range(k):
-                    vehicle = tuple(map(int, f.readline().split()))
-                    vehicles.append(vehicle)
- 
-            ga = GeneticAlgorithm(orders, vehicles, population_size=100, generations=200, mutation_rate=0.1, time_limit=120)  
-            current_solution, current_cost = ga.evolve()
-            
-            output_file.write(f"Total cost of served orders for {input_filename}: {current_cost}\n")
-            print(f"Output for {input_filename} has been successfully appended to 'all_outputs.txt' with GA.")
+try:
+    with open(input_file, "r") as f:
+        n, k = map(int, f.readline().strip().split())
+        orders = [tuple(map(int, f.readline().strip().split())) for _ in range(n)]
+        vehicles = [tuple(map(int, f.readline().strip().split())) for _ in range(k)]
 
-print("All results have been written to 'all_outputs.txt'.")
+    ga = GeneticAlgorithm(orders, vehicles, population_size=100, generations=100, mutation_rate=0.1, time_limit=20)
+    best_solution, best_cost = ga.evolve()
+
+    if best_solution is not None:
+        with open(output_file, "w") as f:
+            f.write(f"{best_cost}\n")
+            for i in range(len(best_solution)):
+                f.write(f"Order {i}: Vehicle {best_solution[i]}\n")
+
+        print(f"Best cost: {best_cost} written to '{output_file}'.")
+    else:
+        print("No solution found.")
+except Exception as e:
+    print(f"Error reading input or processing the algorithm: {e}")
