@@ -1,75 +1,94 @@
 from ortools.sat.python import cp_model
-import os
 
-class VehicleRoutingCP:
+
+class VehicleRoutingCPSAT:
     def __init__(self, orders, vehicles):
         self.orders = orders
         self.vehicles = vehicles
         self.num_orders = len(orders)
         self.num_vehicles = len(vehicles)
-        
         self.model = cp_model.CpModel()
-        
-        self.x = []
-        for i in range(self.num_orders):
-            self.x.append([self.model.NewBoolVar(f"x_{i}_{j}") for j in range(self.num_vehicles)])
-        
-        self.vehicle_load = [self.model.NewIntVar(0, sum(order[0] for order in orders), f"load_{j}") for j in range(self.num_vehicles)]
-        
+
+        # Decision variables
+        self.x = [
+            [self.model.NewBoolVar(f"x_{i}_{j}") for j in range(self.num_vehicles)]
+            for i in range(self.num_orders)
+        ]
+        self.vehicle_load = [
+            self.model.NewIntVar(0, sum(order[0] for order in orders), f"load_{j}")
+            for j in range(self.num_vehicles)
+        ]
         self.total_cost = self.model.NewIntVar(0, sum(order[1] for order in orders), "total_cost")
-        self.model.Add(self.total_cost == sum(self.x[i][j] * self.orders[i][1] for i in range(self.num_orders) for j in range(self.num_vehicles)))
-        
+
+        self.add_constraints()
+
+    def add_constraints(self):
+        # Constraint 1: Each order is assigned to exactly one vehicle
         for i in range(self.num_orders):
-            self.model.Add(sum(self.x[i][j] for j in range(self.num_vehicles)) == 1)  
-        
+            self.model.Add(sum(self.x[i][j] for j in range(self.num_vehicles)) == 1)
+
+        # Constraint 2: Vehicle load must respect capacity limits
         for j in range(self.num_vehicles):
-            self.model.Add(self.vehicle_load[j] == sum(self.x[i][j] * self.orders[i][0] for i in range(self.num_orders)))
-            self.model.Add(self.vehicle_load[j] >= self.vehicles[j][0]) 
-            self.model.Add(self.vehicle_load[j] <= self.vehicles[j][1]) 
+            self.model.Add(
+                self.vehicle_load[j]
+                == sum(self.x[i][j] * self.orders[i][0] for i in range(self.num_orders))
+            )
+            self.model.Add(self.vehicle_load[j] >= self.vehicles[j][0])  # Min capacity
+            self.model.Add(self.vehicle_load[j] <= self.vehicles[j][1])  # Max capacity
+
+        # Objective: Maximize the total cost of served orders
+        self.model.Add(
+            self.total_cost
+            == sum(
+                self.x[i][j] * self.orders[i][1]
+                for i in range(self.num_orders)
+                for j in range(self.num_vehicles)
+            )
+        )
+        self.model.Maximize(self.total_cost)
 
     def solve(self):
         solver = cp_model.CpSolver()
-        solver.parameters.max_time_in_seconds = 120  
-        
+        solver.parameters.max_time_in_seconds = 60  # Limit runtime for larger inputs
+
         status = solver.Solve(self.model)
-        
+
         if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
             print(f"Total cost of served orders: {solver.Value(self.total_cost)}")
+            assignments = []
             for i in range(self.num_orders):
                 for j in range(self.num_vehicles):
                     if solver.Value(self.x[i][j]) == 1:
-                        print(f"Order {i} is assigned to Vehicle {j}")
-            return solver.Value(self.total_cost)
+                        assignments.append((i + 1, j + 1))  # Convert to 1-based index
+            for order, vehicle in assignments:
+                print(f"Order {order} is assigned to Vehicle {vehicle}")
+            return assignments, solver.Value(self.total_cost)
         else:
             print("No solution found.")
-            return None 
-            
-# Thư mục và tệp đầu vào
-input_directory = "./TestFrom(0-250, 0-25)"  
+            return [], None
 
-with open("all_outputs1_ga.txt", "w") as output_file:
-    for input_filename in os.listdir(input_directory):
-        if input_filename.endswith(".txt"): 
-            file_path = os.path.join(input_directory, input_filename)
 
-            with open(file_path, "r") as f:
-                n, k = list(map(int, f.readline().split()))
-                orders = []
-                for _ in range(n):
-                    order = tuple(map(int, f.readline().split()))
-                    orders.append(order)
-                vehicles = []
-                for _ in range(k):
-                    vehicle = tuple(map(int, f.readline().split()))
-                    vehicles.append(vehicle)
- 
-            # Khởi tạo và giải bài toán
-            ga = VehicleRoutingCP(orders, vehicles)  
-            total_cost = ga.solve()
-            
-            if total_cost is not None:
-                output_file.write(f"Total cost of served orders for {input_filename}: {total_cost}\n")
-            else:
-                output_file.write(f"No solution found for {input_filename}\n")
+def read_input():
+    # Read input from standard input
+    n, k = map(int, input().split())
+    orders = [tuple(map(int, input().split())) for _ in range(n)]
+    vehicles = [tuple(map(int, input().split())) for _ in range(k)]
+    return orders, vehicles
 
-print("All results have been written to 'all_outputs1_ga.txt'.")
+
+def main():
+    # Read input
+    orders, vehicles = read_input()
+
+    # Edge case handling
+    if len(orders) == 0 or len(vehicles) == 0:
+        print("No solution possible. Either no orders or no vehicles.")
+        return
+
+    # Solve the problem
+    vr_cp_sat = VehicleRoutingCPSAT(orders, vehicles)
+    vr_cp_sat.solve()
+
+
+if __name__ == "__main__":
+    main()

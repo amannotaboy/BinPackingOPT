@@ -1,6 +1,5 @@
 import random
 import time
-import os
 
 class GeneticAlgorithm:
     def __init__(self, orders, vehicles, population_size, generations, mutation_rate, time_limit):
@@ -17,34 +16,36 @@ class GeneticAlgorithm:
         population = []
         for _ in range(self.population_size):
             individual = [-1] * self.num_orders
-            orders_sorted = sorted(range(self.num_orders), key=lambda i: self.orders[i][0], reverse=True)
             vehicle_loads = [0] * self.num_vehicles
 
-            for order_index in orders_sorted:
+            for order_index in range(self.num_orders):
                 for vehicle_index in range(self.num_vehicles):
                     if vehicle_loads[vehicle_index] + self.orders[order_index][0] <= self.vehicles[vehicle_index][1]:
                         individual[order_index] = vehicle_index
                         vehicle_loads[vehicle_index] += self.orders[order_index][0]
                         break
 
-            if self.is_feasible(individual):
-                population.append(individual)
-            else:
+            if not self.is_feasible(individual):
                 individual = self.repair_individual(individual)
-                population.append(individual)
+            population.append(individual)
         return population
 
     def repair_individual(self, individual):
+        vehicle_loads = [0] * self.num_vehicles
+        for order_index in range(self.num_orders):
+            if individual[order_index] != -1:
+                vehicle_loads[individual[order_index]] += self.orders[order_index][0]
+
         for i in range(self.num_orders):
-            if individual[i] == -1:
+            if individual[i] == -1 or not self.is_feasible_for_order(i, individual[i], individual):
                 for vehicle_index in range(self.num_vehicles):
-                    if self.is_feasible_for_order(i, vehicle_index, individual):
+                    if vehicle_loads[vehicle_index] + self.orders[i][0] <= self.vehicles[vehicle_index][1]:
                         individual[i] = vehicle_index
+                        vehicle_loads[vehicle_index] += self.orders[i][0]
                         break
         return individual
 
     def is_feasible_for_order(self, order_index, vehicle_index, individual):
-        # Kiểm tra xem đơn hàng có thể được giao cho xe này mà không vượt quá khả năng của nó không
         vehicle_load = sum(self.orders[i][0] for i in range(self.num_orders) if individual[i] == vehicle_index)
         new_load = vehicle_load + self.orders[order_index][0]
         return self.vehicles[vehicle_index][0] <= new_load <= self.vehicles[vehicle_index][1]
@@ -55,10 +56,11 @@ class GeneticAlgorithm:
         for k in range(self.num_vehicles):
             vehicle_orders = [i for i, v in enumerate(individual) if v == k]
             load = sum(self.orders[i][0] for i in vehicle_orders)
+
             if self.vehicles[k][0] <= load <= self.vehicles[k][1]:
-                total_cost += sum(self.orders[i][1] for i in vehicle_orders)
+                total_cost += len(vehicle_orders)
             else:
-                penalty += abs(load - self.vehicles[k][0]) if load < self.vehicles[k][0] else abs(load - self.vehicles[k][1])
+                penalty += 1000  # Penalty for invalid solutions
         return total_cost - penalty
 
     def select_parents(self, population, fitness_scores):
@@ -84,7 +86,7 @@ class GeneticAlgorithm:
         for k in range(self.num_vehicles):
             vehicle_orders = [i for i, v in enumerate(individual) if v == k]
             load = sum(self.orders[i][0] for i in vehicle_orders)
-            if load < self.vehicles[k][0] or load > self.vehicles[k][1]:
+            if not (self.vehicles[k][0] <= load <= self.vehicles[k][1]):
                 return False
         return True
 
@@ -126,30 +128,24 @@ class GeneticAlgorithm:
 
         return current_solution, current_fitness
 
-with open("all_outputs1_ga.txt", "w") as output_file:
-    
-    input_directory = "./TestFrom(0-250, 0-25)"  
+def main():
+    m, n = map(int, input().split()) 
+    orders = [tuple(map(int, input().split())) for _ in range(m)]
+    vehicles = [tuple(map(int, input().split())) for _ in range(n)]
 
-    for input_filename in os.listdir(input_directory):
-        if input_filename.endswith(".txt"): 
-            file_path = os.path.join(input_directory, input_filename)
+    population_size = 50
+    generations = 100
+    mutation_rate = 0.1
+    time_limit = 5  
 
-            with open(file_path, "r") as f:
-                n, k = list(map(int, f.readline().split()))
-                orders = []
-                for _ in range(n):
-                    order = tuple(map(int, f.readline().split()))
-                    orders.append(order)
-    
-                vehicles = []
-                for _ in range(k):
-                    vehicle = tuple(map(int, f.readline().split()))
-                    vehicles.append(vehicle)
- 
-            ga = GeneticAlgorithm(orders, vehicles, population_size=100, generations=1000, mutation_rate=0.1, time_limit=120)  
-            current_solution, current_cost = ga.evolve()
-            
-            output_file.write(f"Total cost of served orders for {input_filename}: {current_cost}\n")
-            print(f"Output for {input_filename} has been successfully appended to 'all_outputs.txt' with GA.")
+    ga = GeneticAlgorithm(orders, vehicles, population_size, generations, mutation_rate, time_limit)
+    solution, fitness = ga.evolve()
 
-print("All results have been written to 'all_outputs1_ga.txt'.")
+    served_orders = sum(1 for x in solution if x != -1)
+    print(served_orders)
+    for i, v in enumerate(solution):
+        if v != -1:
+            print(i + 1, v + 1)
+
+if __name__ == "__main__":
+    main()
