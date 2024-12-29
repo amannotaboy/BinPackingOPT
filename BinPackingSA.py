@@ -2,7 +2,6 @@ import random
 import math
 import time
 import os
-
 class SimulatedAnnealing:
     def __init__(self, orders, vehicles, initial_temp, cooling_rate, time_limit):
         self.orders = orders  
@@ -70,40 +69,23 @@ class SimulatedAnnealing:
 
         return current_solution, current_cost 
 
-input_file = "input.txt"
-output_file = "output.txt"
-
-with open(input_file, "r") as f:
-
-    n, k = map(int, f.readline().split())
-    orders = [tuple(map(int, f.readline().split())) for _ in range(n)]              
-    vehicles = [tuple(map(int, f.readline().split())) for _ in range(k)]
-
-    sa = SimulatedAnnealing(orders, vehicles, initial_temp=10000, cooling_rate=0.85, time_limit=120)  
-    current_solution, current_cost = sa.simulated_annealing()
-
-with open(output_file, "w") as f:
-    f.write(str(current_cost) + "\n")
-
-print(f"Total cost has been written to '{output_file}'.")
-
-# with open("all_outputs1.txt", "w") as output_file:
+with open("all_outputs1.txt", "w") as output_file:
         
-#     input_directory = "./TestFrom(0-250, 0-25)"  
+    input_directory = "./TestFrom(0-250, 0-25)"  
 
-#     for input_filename in os.listdir(input_directory):
-#         if input_filename.endswith(".txt"): 
-#             file_path = os.path.join(input_directory, input_filename)
+    for input_filename in os.listdir(input_directory):
+        if input_filename.endswith(".txt"): 
+            file_path = os.path.join(input_directory, input_filename)
 
-#             with open(file_path, "r") as f:
-#                 n, k = map(int, f.readline().split())
-#                 orders = [tuple(map(int, f.readline().split())) for _ in range(n)]
-#                 vehicles = [tuple(map(int, f.readline().split())) for _ in range(k)]
+            with open(file_path, "r") as f:
+                n, k = map(int, f.readline().split())
+                orders = [tuple(map(int, f.readline().split())) for _ in range(n)]
+                vehicles = [tuple(map(int, f.readline().split())) for _ in range(k)]
 
-#             sa = SimulatedAnnealing(orders, vehicles, initial_temp=10000, cooling_rate=0.85, time_limit=120)  
-#             current_solution, current_cost = sa.simulated_annealing()
+            sa = SimulatedAnnealing(orders, vehicles, initial_temp=10000, cooling_rate=0.85, time_limit=120)  
+            current_solution, current_cost = sa.simulated_annealing()
                 
-#             output_file.write(f"Total cost of served orders for {input_filename}: {current_cost}\n")
-#             print(f"Output for {input_filename} has been successfully appended to 'all_outputs.txt'.")
+            output_file.write(f"Total cost of served orders for {input_filename}: {current_cost}\n")
+            print(f"Output for {input_filename} has been successfully appended to 'all_outputs.txt'.")
 
-# print("All results have been written to 'all_outputs1.txt'.")
+print("All results have been written to 'all_outputs1.txt'.")

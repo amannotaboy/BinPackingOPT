@@ -1,6 +1,7 @@
 import random
 import time
-import os 
+import os
+
 class GeneticAlgorithm:
     def __init__(self, orders, vehicles, population_size, generations, mutation_rate, time_limit):
         self.orders = orders
@@ -15,24 +16,38 @@ class GeneticAlgorithm:
     def initialize_population(self):
         population = []
         for _ in range(self.population_size):
-            individual = [-1] * self.num_orders 
-            
-            orders_sorted = sorted(range(self.num_orders), key=lambda i: self.orders[i][0], reverse=True) 
-            vehicle_loads = [0] * self.num_vehicles 
-            
+            individual = [-1] * self.num_orders
+            orders_sorted = sorted(range(self.num_orders), key=lambda i: self.orders[i][0], reverse=True)
+            vehicle_loads = [0] * self.num_vehicles
+
             for order_index in orders_sorted:
                 for vehicle_index in range(self.num_vehicles):
                     if vehicle_loads[vehicle_index] + self.orders[order_index][0] <= self.vehicles[vehicle_index][1]:
                         individual[order_index] = vehicle_index
                         vehicle_loads[vehicle_index] += self.orders[order_index][0]
                         break
-            
-            if self.is_feasible(individual):  # Kiểm tra tính khả thi của cá thể
+
+            if self.is_feasible(individual):
                 population.append(individual)
             else:
-                continue  # Nếu không khả thi, tạo lại cá thể mới
+                individual = self.repair_individual(individual)
+                population.append(individual)
         return population
 
+    def repair_individual(self, individual):
+        for i in range(self.num_orders):
+            if individual[i] == -1:
+                for vehicle_index in range(self.num_vehicles):
+                    if self.is_feasible_for_order(i, vehicle_index, individual):
+                        individual[i] = vehicle_index
+                        break
+        return individual
+
+    def is_feasible_for_order(self, order_index, vehicle_index, individual):
+        # Kiểm tra xem đơn hàng có thể được giao cho xe này mà không vượt quá khả năng của nó không
+        vehicle_load = sum(self.orders[i][0] for i in range(self.num_orders) if individual[i] == vehicle_index)
+        new_load = vehicle_load + self.orders[order_index][0]
+        return self.vehicles[vehicle_index][0] <= new_load <= self.vehicles[vehicle_index][1]
 
     def fitness(self, individual):
         total_cost = 0
@@ -67,7 +82,7 @@ class GeneticAlgorithm:
 
     def is_feasible(self, individual):
         for k in range(self.num_vehicles):
-            vehicle_orders = [i for i, v in enumerate(individual) if v == k]    
+            vehicle_orders = [i for i, v in enumerate(individual) if v == k]
             load = sum(self.orders[i][0] for i in vehicle_orders)
             if load < self.vehicles[k][0] or load > self.vehicles[k][1]:
                 return False
@@ -131,10 +146,10 @@ with open("all_outputs1_ga.txt", "w") as output_file:
                     vehicle = tuple(map(int, f.readline().split()))
                     vehicles.append(vehicle)
  
-            ga = GeneticAlgorithm(orders, vehicles, population_size=100, generations=200, mutation_rate=0.1, time_limit=120)  
+            ga = GeneticAlgorithm(orders, vehicles, population_size=100, generations=1000, mutation_rate=0.1, time_limit=120)  
             current_solution, current_cost = ga.evolve()
             
             output_file.write(f"Total cost of served orders for {input_filename}: {current_cost}\n")
             print(f"Output for {input_filename} has been successfully appended to 'all_outputs.txt' with GA.")
 
-print("All results have been written to 'all_outputs.txt'.")
+print("All results have been written to 'all_outputs1_ga.txt'.")

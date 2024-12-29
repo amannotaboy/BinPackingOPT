@@ -1,10 +1,10 @@
-Total cost of served orders for test_case_1.txt: 1755
-Total cost of served orders for test_case_10.txt: 2856
-Total cost of served orders for test_case_2.txt: 3610
-Total cost of served orders for test_case_3.txt: 2129
-Total cost of served orders for test_case_4.txt: 1303
-Total cost of served orders for test_case_5.txt: 485
-Total cost of served orders for test_case_6.txt: 763
-Total cost of served orders for test_case_7.txt: 956
-Total cost of served orders for test_case_8.txt: 2741
-Total cost of served orders for test_case_9.txt: 189
+No solution found for test_case_1.txt
+No solution found for test_case_10.txt
+No solution found for test_case_2.txt
+No solution found for test_case_3.txt
+No solution found for test_case_4.txt
+No solution found for test_case_5.txt
+No solution found for test_case_6.txt
+No solution found for test_case_7.txt
+No solution found for test_case_8.txt
+No solution found for test_case_9.txt
